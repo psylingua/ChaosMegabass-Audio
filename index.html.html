@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le Chaos Megabass – Audio PsyLingua</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;900&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a1628; min-height: 100vh; font-family: 'Nunito', sans-serif;
+    display: flex; flex-direction: column; align-items: center; padding: 16px 14px 32px;
+  }
+  body::before { content:''; position:fixed; inset:0; background:radial-gradient(ellipse at 60% 0%,#112244 0%,#0a1628 65%); z-index:0; }
+  .container { position:relative; z-index:1; width:100%; max-width:400px; }
+  .header { text-align:center; padding:20px 16px 16px; margin-bottom:14px; background:linear-gradient(160deg,#112244 0%,#0d1b36 100%); border-radius:18px; border:1.5px solid rgba(255,255,255,0.08); box-shadow:0 8px 32px rgba(0,0,0,0.5); }
+  .header h1 { font-family:'Bangers',cursive; font-size:1.9rem; color:#e8a020; letter-spacing:2px; line-height:1.1; text-shadow:2px 2px 0 rgba(0,0,0,0.6); }
+  .header h1 span { display:block; font-size:0.9rem; color:rgba(255,255,255,0.4); letter-spacing:1px; margin-top:4px; }
+  .badge { display:inline-block; margin-top:10px; background:rgba(232,160,32,0.15); border:1px solid rgba(232,160,32,0.4); color:#e8a020; font-size:0.72rem; font-weight:900; letter-spacing:1.5px; padding:4px 14px; border-radius:20px; text-transform:uppercase; }
+  .card { background:#0f1e38; border:1.5px solid rgba(255,255,255,0.07); border-radius:18px; padding:16px 14px; box-shadow:0 4px 24px rgba(0,0,0,0.4); margin-bottom:14px; }
+  .page-label { font-size:0.68rem; font-weight:900; letter-spacing:2px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:12px; }
+  .content-blocks { margin-bottom:14px; }
+  .block-narrative { background:rgba(42,184,154,0.08); border-left:3px solid #2ab89a; border-radius:0 10px 10px 0; padding:10px 12px; margin-bottom:10px; }
+  .block-narrative .block-type { font-size:0.6rem; font-weight:900; letter-spacing:2px; color:#2ab89a; text-transform:uppercase; margin-bottom:6px; }
+  .block-bubble { background:rgba(255,255,255,0.04); border:1.5px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 12px; margin-bottom:10px; transition:border-color 0.3s,background 0.3s; }
+  .block-bubble.active { border-color:rgba(232,118,10,0.5); background:rgba(232,118,10,0.07); }
+  .block-bubble .block-type { font-size:0.6rem; font-weight:900; letter-spacing:2px; color:rgba(255,255,255,0.3); text-transform:uppercase; margin-bottom:6px; }
+  .block-bubble.active .block-type { color:#e8760a; }
+  .block-sound { text-align:center; padding:8px; margin-bottom:10px; }
+  .block-sound .sound-text { font-family:'Bangers',cursive; font-size:1.4rem; color:#e8a020; letter-spacing:3px; text-shadow:2px 2px 0 rgba(0,0,0,0.5); }
+  .lang-line { display:flex; align-items:baseline; gap:6px; padding:3px 0; opacity:0.45; transition:opacity 0.3s; border-radius:4px; }
+  .lang-line.speaking { opacity:1; }
+  .lang-flag { font-size:0.8rem; flex-shrink:0; }
+  .lang-text-inline { font-size:0.88rem; font-weight:700; color:#fff; line-height:1.4; }
+  .controls { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+  .btn-play { width:58px; height:58px; border-radius:50%; border:none; background:linear-gradient(135deg,#1a5cb5,#e8760a); color:#fff; font-size:1.3rem; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 4px 18px rgba(26,92,181,0.4); transition:transform 0.15s; }
+  .btn-play:active { transform:scale(0.92); }
+  .btn-play.playing { background:linear-gradient(135deg,#e8760a,#e8a020); animation:glow 1.8s ease-in-out infinite; }
+  @keyframes glow { 0%,100%{box-shadow:0 4px 18px rgba(232,118,10,0.4);} 50%{box-shadow:0 4px 28px rgba(232,160,32,0.7);} }
+  .progress-area { flex:1; }
+  .lang-status { font-size:0.72rem; font-weight:900; color:#e8a020; margin-bottom:7px; min-height:18px; letter-spacing:0.3px; }
+  .progress-bar { height:5px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,#1a5cb5,#e8760a,#e8a020); border-radius:3px; width:0%; transition:width 0.4s ease; }
+  .speed-row { display:flex; align-items:center; gap:7px; margin-bottom:12px; }
+  .speed-label { font-size:0.66rem; color:rgba(255,255,255,0.3); font-weight:700; white-space:nowrap; }
+  .speed-btn { padding:4px 10px; border-radius:16px; border:1px solid rgba(255,255,255,0.12); background:transparent; color:rgba(255,255,255,0.35); font-size:0.66rem; font-weight:900; cursor:pointer; transition:all 0.2s; font-family:'Nunito',sans-serif; }
+  .speed-btn.active { background:rgba(26,92,181,0.4); border-color:#1a5cb5; color:#fff; }
+  .nav-buttons { display:flex; gap:10px; }
+  .btn-nav { flex:1; padding:11px; border-radius:11px; border:1.5px solid rgba(255,255,255,0.09); background:rgba(255,255,255,0.03); color:rgba(255,255,255,0.6); font-family:'Nunito',sans-serif; font-weight:900; font-size:0.85rem; cursor:pointer; transition:all 0.2s; }
+  .btn-nav:hover { background:rgba(26,92,181,0.18); border-color:rgba(26,92,181,0.4); color:#fff; }
+  .btn-nav:disabled { opacity:0.2; cursor:default; }
+  .wtf-badge { text-align:center; margin-top:10px; min-height:22px; }
+  .wtf-badge span { font-family:'Bangers',cursive; font-size:1.05rem; color:#e8a020; letter-spacing:2px; opacity:0; transition:opacity 0.6s; }
+  .wtf-badge span.visible { opacity:1; }
+  .page-dots { display:flex; justify-content:center; gap:4px; margin-top:14px; flex-wrap:wrap; }
+  .dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.13); transition:all 0.3s; }
+  .dot.current { background:#e8760a; transform:scale(1.5); }
+  .dot.done { background:#2ab89a; }
+  .footer { text-align:center; margin-top:18px; color:rgba(255,255,255,0.18); font-size:0.66rem; font-weight:700; letter-spacing:1px; }
+  .footer strong { color:rgba(255,255,255,0.38); }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Le Chaos Megabass<span>El Caos Megabass · The Megabass Chaos</span></h1>
+    <div class="badge">🎵 Audio trilingue · Premium</div>
+  </div>
+  <div class="card">
+    <div class="page-label">Page <span id="currentPageNum">1</span> · <span id="totalPagesNum">?</span></div>
+    <div class="content-blocks" id="contentBlocks"></div>
+    <div class="controls">
+      <button class="btn-play" id="btnPlay" onclick="togglePlay()">▶</button>
+      <div class="progress-area">
+        <div class="lang-status" id="langStatus">Appuie sur ▶ pour écouter</div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+    </div>
+    <div class="speed-row">
+      <span class="speed-label">Vitesse :</span>
+      <button class="speed-btn" onclick="setSpeed(0.8,this)">Lent</button>
+      <button class="speed-btn active" onclick="setSpeed(1,this)">Normal</button>
+      <button class="speed-btn" onclick="setSpeed(1.3,this)">Rapide</button>
+    </div>
+    <div class="nav-buttons">
+      <button class="btn-nav" id="btnPrev" onclick="prevPage()">← Précédent</button>
+      <button class="btn-nav" id="btnNext" onclick="nextPage()">Suivant →</button>
+    </div>
+    <div class="wtf-badge"><span id="wtfBadge"></span></div>
+  </div>
+  <div class="page-dots" id="pageDots"></div>
+  <div class="footer"><strong>PsyLingua®</strong> · psylingua.com</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// DONNÉES — 82 pages de la BD
+// Types : narrative | bubble | sound
+// ═══════════════════════════════════════════
+const pages = [
+  // Page 1 — Couverture
+  [{ type:"bubble", label:"Jazz",
+     fr:"Ce morceau de fromage est à moi !",
+     es:"¡Este trozo de queso es mío!",
+     en:"This piece of cheese is mine!" },
+   { type:"sound", text:"What the fuzz !" }],
+
+  // Page 2 — Page de titre / Colophon
+  [{ type:"narrative",
+     fr:"Le Chaos Megabass. Écrit par Estrella Vallecillo. Création PsyLingua.",
+     es:"El Caos Megabass. Escrito por Estrella Vallecillo. Creación PsyLingua.",
+     en:"The Megabass Chaos. Written by Estrella Vallecillo. Creation PsyLingua." }],
+
+  // Page 3 — 4e de couverture intérieure / Quatrième
+  [{ type:"narrative",
+     fr:"Quand un chien à casquette et une créatrice de t-shirts écolo s'unissent… Attention au What the fun ! Ici, tout est une histoire de fun, d'écologie… et de bêtises XXL. Ne sous-estimez jamais un Malinois avec un plan secret !",
+     es:"Cuando un perro con gorra y una diseñadora de camisetas ecológicas se unen… ¡Cuidado con el What the fun! Aquí, todo es cuestión de diversión, ecología… y travesuras XXL. Nunca subestimes a un Malinois con un plan secreto.",
+     en:"When a cap-wearing dog and an eco-shirt designer team up... Watch out for the What the fun! Here, it's all about fun, ecology… and XXL mischief. Never underestimate a Malinois with a secret plan!" }],
+
+  // Page 4 — Présentation personnages
+  [{ type:"bubble", label:"Ángeles",
+     fr:"Ángeles, 11 ans. Créative, écolo, curieuse et sensible et déterminée.",
+     es:"Ángeles, 11 años. Creativa, ecológica, curiosa, sensible y decidida.",
+     en:"Angeles, 11 years old. Creative, eco-friendly, curious, sensitive and determined." },
+   { type:"bubble", label:"Jazz",
+     fr:"Jazz. Malinois plein d'énergie, dormeur professionnel, fan de fun, d'hypnose écolo... et de goûters bien mérités !",
+     es:"Jazz. Malinois lleno de energía, dormilón profesional, amante del fun, hipnosis ecológica... ¡y de los bocadillos bien ganados!",
+     en:"Jazz. Energetic Malinois, professional napper, fun lover, eco-hypnosis fun… and snack enthusiast!" }],
+
+  // Page 5 — Tout est calme
+  [{ type:"narrative",
+     fr:"Tout est calme. L'air est doux, comme un câlin de la nuit… Seules les lucioles dansent doucement…",
+     es:"Todo está tranquilo. El aire es suave, como un abrazo de la noche… Solo las luciérnagas bailan suavemente…",
+     en:"All is calm. The air is soft, like a hug from the night… Only fireflies dance softly…" }],
+
+  // Page 6 — Bois Party
+  [{ type:"bubble", fr:"Bois Party vol. 2 – sans voisins râleurs.",
+     es:"Fiesta del Bosque vol. 2 – sin vecinos gruñones.",
+     en:"Forest Party vol. 2 – no grumpy neighbors." },
+   { type:"bubble", fr:"Enfin une utilité à ces trucs-là.",
+     es:"Por fin una utilidad para estas cosas.",
+     en:"Finally, a use for these things." }],
+
+  // Page 7 — Chuchotements / Oiseaux
+  [{ type:"bubble", fr:"Chuchotements", es:"Susurros", en:"Whispers" },
+   { type:"bubble", fr:"T'as entendu, hein ?", es:"Lo has oído, ¿eh?", en:"You heard that, huh?" },
+   { type:"bubble", fr:"Totalement.", es:"Totalmente.", en:"Totally." },
+   { type:"narrative", fr:"Potins de la forêt", es:"Rumores del bosque", en:"Woodland gossip" }],
+
+  // Page 8 — Reconnexion nature
+  [{ type:"bubble", fr:"Reconnexion à la nature… par streaming.",
+     es:"Reconexión con la naturaleza… vía streaming.",
+     en:"Reconnecting with nature… through streaming." },
+   { type:"bubble", fr:"Vacances perpétuelles depuis qu'ils sont partis... Pas d'humains… que du bonheur !",
+     es:"Vacaciones eternas desde que se marcharon... Sin humanos… ¡solo felicidad!",
+     en:"Perpetual vacation since they left. No humans… just happiness!" }],
+
+  // Page 9 — Quelques instants plus tard
+  [{ type:"narrative", fr:"Quelques instants plus tard, parmi les humains…",
+     es:"Unos momentos después, entre los humanos…",
+     en:"A few moments later, on the human side." }],
+
+  // Page 10 — Pleine lune
+  [{ type:"narrative", fr:"Sous la pleine lune scintillante, Ángeles et Jazz sont fascinés par la beauté du ciel.",
+     es:"Bajo la resplandeciente luna llena, Ángeles y Jazz están fascinados por la belleza del cielo.",
+     en:"Under the shimmering full moon, Ángeles and Jazz are captivated by the beauty of the sky." }],
+
+  // Page 11 — Elle respire
+  [{ type:"bubble", label:"Narrateur", fr:"Elle respire profondément…",
+     es:"Ella respira profundamente…", en:"She takes a deep breath…" },
+   { type:"bubble", label:"Jazz",
+     fr:"Paisible ? Attends que je commence à ronfler.",
+     es:"¿Tranquila? Espera a que empiece a roncar.",
+     en:"Peaceful? Wait till I start snoring." },
+   { type:"bubble", label:"Ángeles",
+     fr:"Écoute, Jazz... Quelle nuit paisible.",
+     es:"Escucha, Jazz... Qué noche tan tranquila.",
+     en:"Listen, Jazz... What a peaceful night." }],
+
+  // Page 12 — Wouaf le calme
+  [{ type:"bubble", label:"Jazz",
+     fr:"Wouaf, le calme... Ça déchire, pas vrai ?",
+     es:"¡Guau, la calma... Esto sí que mola, ¿no?",
+     en:"Woof, the calm... This is awesome, isn't it?" },
+   { type:"bubble", label:"Jazz",
+     fr:"Trop de lumière lunaire… faut que je me protège.",
+     es:"Demasiada luz lunar... necesito protección.",
+     en:"Too much moonlight... need protection." },
+   { type:"bubble", label:"Jazz",
+     fr:"Ce nuage ressemble à un fromage vegan… Coïncidence ?",
+     es:"Esa nube parece un queso vegano… ¿Coincidencia?",
+     en:"That cloud looks like vegan cheese… Coincidence?" }],
+
+  // Page 13 — Insta-chill
+  [{ type:"sound", text:"Insta-chill #Zénitude / #Tranquilidad / #PeaceVibes" }],
+
+  // Page 14 — Mais quelque chose se prépare
+  [{ type:"narrative", fr:"Mais quelque chose se prépare !",
+     es:"¡Pero algo se está preparando!",
+     en:"But something is brewing!" }],
+
+  // Page 15 — Affiche Megabass Night (texte déformé)
+  [{ type:"narrative",
+     fr:"Pense à jeter tes déchets... n'importe où ! Megabass Night — Viens écraser la planète... et tes oreilles ! Ce samedi ! De minuit à 5h.",
+     es:"¡Piensa en tirar tu basura... donde sea! Megabass Night — ¡Ven a aplastar el planeta... y tus oídos! ¡Este sábado! Desde medianoche hasta las 5.",
+     en:"Feel free to throw your trash! Anywhere! Megabass Night — Come crush the planet... and your ears! This Saturday! Midnight to 5AM." }],
+
+  // Page 16 — C'est une blague ?
+  [{ type:"bubble", label:"Ángeles", fr:"C'est une blague ?", es:"¿Es una broma?", en:"Is this a joke?" },
+   { type:"bubble", label:"Jazz",
+     fr:"On dirait une pub écrite par une hyène sous caféine…",
+     es:"Parece un anuncio escrito por una hiena con cafeína…",
+     en:"Looks like an ad written by a hyena on caffeine…" }],
+
+  // Page 17 — D'un côté des décibels
+  [{ type:"narrative",
+     fr:"D'un côté, des décibels qui écrasent. De l'autre, des animaux qui tremblent.",
+     es:"Por un lado, decibelios que aplastan. Por el otro, animales que tiemblan.",
+     en:"On one side, decibels that crush. On the other, animals that tremble." }],
+
+  // Page 18 — Où trouver la paix
+  [{ type:"bubble", label:"Ángeles", fr:"Où trouver la paix dans ce chaos ?",
+     es:"¿Dónde encontrar paz en este caos?", en:"Where can peace be found in this chaos?" },
+   { type:"bubble", label:"Ángeles",
+     fr:"Y a-t-il un bouton pause pour ce délire ?",
+     es:"¿Hay un botón de pausa para este caos?", en:"Is there a pause button for this madness?" },
+   { type:"bubble", label:"Jazz",
+     fr:"T'as entendu ? Non ? Normal. Y'a trop de bruit.",
+     es:"¿Escuchaste? No. Normal. Hay demasiado ruido.",
+     en:"Did you hear that? No? Makes sense. It's way too loud." }],
+
+  // Page 19 — Un déchet = un danger
+  [{ type:"narrative",
+     fr:"Un déchet = un danger pour la vie sauvage.",
+     es:"Un residuo = un peligro para la vida silvestre.",
+     en:"One piece of trash = danger for wildlife." },
+   { type:"bubble", label:"Jazz",
+     fr:"C'est pas un spa, c'est une zone de guerre !",
+     es:"¡Esto no es un spa, es una zona de guerra!",
+     en:"This isn't a spa, it's a warzone!" },
+   { type:"bubble", label:"Ángeles",
+     fr:"La prochaine fois, casque de chantier.",
+     es:"La próxima vez, casco de obrero.",
+     en:"Next time: construction helmet." }],
+
+  // Page 20 — C'est quoi ce vacarme
+  [{ type:"bubble", label:"Animal", fr:"C'est quoi ce vacarme ?",
+     es:"¿Qué es este ruido?", en:"What is this noise?" },
+   { type:"bubble", label:"Animal",
+     fr:"La nature aussi a des émotions !",
+     es:"¡La naturaleza también tiene emociones!",
+     en:"Nature has emotions too!" },
+   { type:"bubble", label:"Animal", fr:"J'ai peur…", es:"Tengo miedo…", en:"I'm scared." }],
+
+  // Page 21 — Pendant ce temps
+  [{ type:"narrative", fr:"Pendant ce temps…", es:"Mientras tanto…", en:"Meanwhile…" },
+   { type:"bubble", label:"Ángeles", fr:"Ça suffit !", es:"¡Ya basta!", en:"Enough!" },
+   { type:"bubble", label:"Jazz",
+     fr:"Woof ! Traduction : je leur mordille les chaussures ?",
+     es:"¡Guau! Traducción: ¿Les muerdo los zapatos?",
+     en:"Woof! Translation: Should I nibble their shoes?" }],
+
+  // Page 22 — Jazz tu dors ?
+  [{ type:"bubble", label:"Ángeles", fr:"Jazz… Tu dors ?",
+     es:"¿Jazz… estás dormido?", en:"Jazz… you awake?" },
+   { type:"bubble", label:"Ángeles",
+     fr:"C'est la troisième fois que je compte les moutons…",
+     es:"Es la tercera vez que cuento ovejas…",
+     en:"This is the third time I'm counting sheep…" },
+   { type:"bubble", label:"Ángeles",
+     fr:"Ils font trop de bruit !",
+     es:"¡Hacen demasiado ruido!", en:"They're way too loud!" }],
+
+  // Page 23 — Deux heures plus tard
+  [{ type:"narrative", fr:"Deux heures plus tard…", es:"Dos horas después…", en:"Two hours later…" },
+   { type:"bubble", label:"Ángeles", fr:"Jazz, réveille-toi !",
+     es:"¡Jazz, despierta!", en:"Jazz, wake up!" },
+   { type:"bubble", label:"Ángeles",
+     fr:"T'es censé être mon chien-gardien anti-bruit, pas un dormeur pro !",
+     es:"Deberías ser mi perro guardián anti-ruido, ¡no un profesional de la siesta!",
+     en:"You're supposed to be my noise-guard dog, not a pro napper!" }],
+
+  // Page 24 — Concert sans vibes écolos
+  [{ type:"bubble", label:"Ángeles",
+     fr:"Un concert sans vibes écolos ? C'est aussi démodé qu'un téléphone à clapet !",
+     es:"¿Un concierto sin onda eco? ¡Tan pasado de moda como un móvil con tapita!",
+     en:"An eco-unfriendly concert? As outdated as a flip phone!" },
+   { type:"bubble", label:"Jazz", fr:"Tu captes là ?", es:"¿Tienes señal?", en:"Do you get signal?" },
+   { type:"bubble", label:"Jazz", fr:"Quoi ?!", es:"¿Qué?", en:"What?!" }],
+
+  // Page 25 — Téléphone pliable
+  [{ type:"bubble", label:"Jazz",
+     fr:"Un téléphone pliable ? C'est préhistorique !",
+     es:"¿Un móvil plegable? ¡Eso es prehistórico!",
+     en:"A flip phone? That's prehistoric!" },
+   { type:"bubble", label:"Ángeles",
+     fr:"T'as osé !…",
+     es:"¡Te atreviste!...", en:"No way you just said that!..." }],
+
+  // Page 26 — Nous les chiens
+  [{ type:"bubble", label:"Jazz",
+     fr:"Nous les chiens, on s'endort partout… grâce à l'hypnose écolo de sieste profonde.",
+     es:"Nosotros los perros, nos dormimos en cualquier parte… gracias a la siesta profunda por hipnosis ecológica.",
+     en:"We dogs can fall asleep anywhere… thanks to eco-hypnosis nap technique." },
+   { type:"narrative",
+     fr:"L'art de dormir durablement.",
+     es:"El arte de dormir de forma sostenible.",
+     en:"The art of sustainable sleeping." }],
+
+  // Page 27 — Hypnose écolo
+  [{ type:"bubble", label:"Ángeles",
+     fr:"Hypnose écolo ? T'as trop TikToker, Jazz...",
+     es:"¿Hipnosis eco? Te pasas de TikTok, Jazz...",
+     en:"Eco-hypnosis? You've been binge-watching TikTok, Jazz..." },
+   { type:"bubble", label:"Jazz", fr:"C'n'est pas faux…", es:"Puede ser…", en:"Maybe…" }],
+
+  // Page 28 — Mode ninja
+  [{ type:"bubble", label:"Jazz",
+     fr:"Écoute bien, Ángeles ! Les ninjas du sommeil font ça :",
+     es:"¡Escucha bien, Ángeles! Los ninjas del sueño hacen esto:",
+     en:"Listen carefully, Angeles! Sleep ninjas do this:" },
+   { type:"sound", text:"Mode Ninja : activé / Modo Ninja: Activado / Ninja mode: activated" },
+   { type:"bubble", label:"Jazz",
+     fr:"Concentration maximale.",
+     es:"Concentración máxima.", en:"Total focus." },
+   { type:"bubble", label:"Ángeles",
+     fr:"Il est sérieux, là ?", es:"¿Va en serio?", en:"Is he serious right now?" }],
+
+  // Page 29 — Technique secrète
+  [{ type:"bubble", label:"Jazz",
+     fr:"OK. On va faire une technique secrète de ninja relax :",
+     es:"Vale. Vamos a usar una técnica secreta de relajación ninja:",
+     en:"Ok. Let's do a secret ninja chill technique:" },
+   { type:"bubble", label:"Jazz",
+     fr:"Tends tout ton corps… comme un cactus énervé !",
+     es:"¡Tensa todo tu cuerpo... como un cactus enojado!",
+     en:"Tense your whole body… like an ANGRY cactus!" },
+   { type:"bubble", label:"Jazz",
+     fr:"Tiens bon… trois… deux… un… et…",
+     es:"Aguanta... tres… dos… uno… y…",
+     en:"Hold it... three… two… one… and…" }],
+
+  // Page 30 — Guimauve fondue
+  [{ type:"bubble", label:"Jazz",
+     fr:"Et maintenant... relâche comme une guimauve fondue...",
+     es:"Y ahora... suelta como una nube derretida...",
+     en:"Now... let go like a melted marshmallow..." },
+   { type:"sound", text:"Zzzz… Guimauve intérieure / Nube interior / Inner marshmallow" }],
+
+  // Page 31 — Scooter électrique
+  [{ type:"bubble", label:"Jazz",
+     fr:"Regarde-les... ce sont tes petits soucis.",
+     es:"Mira... son tus pequeñas preocupaciones.",
+     en:"Look at them... these are your little worries." },
+   { type:"bubble", label:"Jazz",
+     fr:"Hop, tout le monde en selle ! Bonne route, les tracas… Destination : Détente !",
+     es:"¡Vamos, todos en marcha! Buen viaje, preocupaciones… Destino: Relajación.",
+     en:"Alright, everyone on board! Safe travels, worries… Destination: Relaxation!" }],
+
+  // Page 32 — Je tends
+  [{ type:"bubble", label:"Ángeles",
+     fr:"Je tends... je tends... comme un cactus en colère...",
+     es:"Me tenso... me tenso... como un cactus furioso...",
+     en:"I'm tensing... tensing... like an angry cactus..." },
+   { type:"bubble", label:"Ángeles",
+     fr:"Tu fonds… tu glisses… tu deviens pâte à modeler molle…",
+     es:"Te derrites… te deslizas… eres plastilina blandita…",
+     en:"You melt… you slide… you're soft sleepy play-dough…" },
+   { type:"bubble", label:"Ángeles",
+     fr:"Jazz... Avoue, c'est juste une combine pour que je sois ridicule, non ?",
+     es:"Jazz... Dilo, ¿es solo un truco para que parezca ridicula, verdad?",
+     en:"Jazz... Admit it, this is just a trick to make me look ridiculous, right?" }],
+
+  // Page 33 — Magique
+  [{ type:"bubble", label:"Ángeles", fr:"Mmmh… c'est… magique…",
+     es:"Mmm… es… mágico…", en:"Mmm… it is… magical…" },
+   { type:"bubble", label:"Ángeles", fr:"Hmm... c'est doux... comme une sieste mentale...",
+     es:"Mmm... qué suave... como una siesta mental...", en:"Hmm... so soft... like a brain nap..." },
+   { type:"bubble", label:"Jazz",
+     fr:"Chut... La magie fonctionne... Même sur moi.",
+     es:"Shhh... La magia funciona... Incluso en mí.",
+     en:"Shhh... The magic works… even on me." },
+   { type:"sound", text:"Zzzz…" }],
+
+  // Page 34 — Jazz génie / ronflement
+  [{ type:"bubble", label:"Ángeles", fr:"Jazz... T'es un génie...",
+     es:"Jazz... Eres un genio...", en:"Jazz... You're a genius..." },
+   { type:"bubble", label:"Ángeles",
+     fr:"Jazz... T'es un génie... Mais ton ronflement est pire que le concert...",
+     es:"Jazz... Eres un genio... Pero roncas peor que el concierto...",
+     en:"Jazz... You're a genius... But your snoring's louder than the concert..." }],
+
+  // Page 35 — Ángeles et Jazz dorment
+  [{ type:"narrative",
+     fr:"Ángeles et Jazz dorment profondément, rechargeant leurs batteries pour les défis de demain.",
+     es:"Ángeles y Jazz duermen profundamente, recargando energías para los desafíos de mañana.",
+     en:"Ángeles and Jazz sleep deeply, recharging their batteries for tomorrow's challenges." }],
+
+  // Page 36 — Décharge cosmique
+  [{ type:"bubble", label:"Ángeles",
+     fr:"C'est pas un parc… c'est une décharge cosmique !",
+     es:"¡Esto no es un parque… es un vertedero cósmico!",
+     en:"This isn't a park… it's a cosmic dump!" }],
+
+  // Page 37 — BZZ / GLO UP
+  [{ type:"sound", text:"BZZ ZZ… GLO UP !" }],
+
+  // Page 38 — SLURP
+  [{ type:"sound", text:"SLURP !" },
+   { type:"bubble", label:"Ángeles", fr:"Elle... bouge ?",
+     es:"¿Se está moviendo...?", en:"Is it... moving...?" },
+   { type:"bubble", label:"Jazz",
+     fr:"C'est pire que le pipi du chat de tonton Miguel !",
+     es:"¡Peor que el pipí del tío Miguel!",
+     en:"This is worse than Uncle Miguel's cat pee!" },
+   { type:"sound", text:"Slurp… Pouah !" }],
+
+  // Page 39 — C'est trop
+  [{ type:"bubble", label:"Ángeles",
+     fr:"C'est trop... je vais jamais y arriver.",
+     es:"Es demasiado... no voy a poder...", en:"It's too much... I can't do this..." },
+   { type:"bubble", label:"Ángeles",
+     fr:"Et si je ne suis pas assez forte ? Et si je n'y arrive pas toute seule ?",
+     es:"¿Y si no soy lo suficientemente fuerte? ¿Y si no puedo sola?",
+     en:"What if I'm not strong enough? What if I can't do it alone?" },
+   { type:"bubble", label:"Ángeles",
+     fr:"J'ai le cœur qui tambourine, le ventre tout noué…",
+     es:"El corazón me late fuerte… y el estómago hecho un nudo…",
+     en:"My heart's pounding… my stomach's all twisted…" }],
+
+  // Page 40 — Pas Wonder Woman
+  [{ type:"bubble", label:"Ángeles",
+     fr:"Je suis juste une fille... pas Wonder Woman !",
+     es:"Solo soy una chica... no Wonder Woman!",
+     en:"I'm just a girl... not Wonder Woman!" },
+   { type:"bubble", label:"Jazz",
+     fr:"J'aimerais aider... mais j'me sens si p'tite...",
+     es:"Quiero ayudar... pero me siento tan pequeña...",
+     en:"I want to help... but I feel so small..." }],
+
+  // Page 41 — Étape 1 : Boss ALU
+  [{ type:"narrative",
+     fr:"Étape 1 : Transforme les déchets en ennemis de jeu vidéo ! Boss ALU – Niveau 5. Mini-Boss toxique. Équipement activé. Gants équipés. Mission acceptée.",
+     es:"Paso 1: ¡Convierte la basura en enemigos de videojuego! Jefe ALU – Nivel 5. Mini-Jefe Tóxico. Equipo activado. Guantes puestos. ¡Misión aceptada!",
+     en:"Step 1: Turn trash into video game enemies! ALU BOSS – Level 5. Toxic Mini-Boss. Equipment activated. Gloves on. Mission accepted." }],
+
+  // Page 42 — XP confiance
+  [{ type:"bubble", label:"Ángeles", fr:"Je me sens forte !",
+     es:"¡Me siento fuerte!", en:"I feel strong!" },
+   { type:"narrative",
+     fr:"Chaque fois que tu relèves un défi, tu gagnes de l'XP de confiance…",
+     es:"Cada vez que superas un reto, ganas experiencia en confianza…",
+     en:"Every time you level up, you earn self-confidence XP…" }],
+
+  // Page 43 — Mission nettoyage
+  [{ type:"sound", text:"Mission nettoyage activée / Misión de limpieza activada / Cleaning mission activated" },
+   { type:"bubble", label:"Ángeles",
+     fr:"Jazz... T'as encore abusé des energy drinks ?",
+     es:"Jazz… ¿Otra vez te pasaste con los energy drinks?",
+     en:"Jazz… Did you binge energy drinks again?" },
+   { type:"bubble", label:"Jazz",
+     fr:"C'est ma super-potion secrète !",
+     es:"¡Es mi poción secreta!", en:"It's my secret power-up!" }],
+
+  // Page 44 — Étape 2
+  [{ type:"narrative",
+     fr:"Étape 2 : Chaque déchet ramassé = 100 points Éco-Warrior ! Atteins 500... et débloque le pouvoir secret !",
+     es:"Paso 2: ¡Cada basura recogida = 100 puntos Eco-Guerrero! ¡Llega a 500... y desbloqueas el poder secreto!",
+     en:"Step 2: Each trash picked = 100 Eco-Warrior points! Hit 500... and unlock the secret power." },
+   { type:"narrative", fr:"Score total : 400/500.", es:"Puntuación total: 400/500.", en:"Total score: 400/500." }],
+
+  // Page 45 — WHAT THE FUN !
+  [{ type:"sound", text:"WHAT THE FUN !" },
+   { type:"bubble", label:"Ángeles",
+     fr:"J'ai la patate biodégradable maintenant !",
+     es:"¡Estoy a tope ecológico ahora!",
+     en:"I'm on full eco-power mode now!" },
+   { type:"narrative",
+     fr:"500 XP ! Tu viens de débloquer le niveau Reine du Recyclage !",
+     es:"¡500 XP! ¡Acabas de desbloquear el nivel Reina del Reciclaje!",
+     en:"500 XP! You just unlocked the Queen of Recycling level!" }],
+
+  // Page 46 — Félicitations
+  [{ type:"bubble", label:"Jazz",
+     fr:"Félicitations Ángeles. Tu viens de sauver une forêt entière de gobelets zombifiés.",
+     es:"Felicidades Ángeles. Acabas de salvar un bosque entero de vasos zombis.",
+     en:"Congrats Ángeles. You just saved an entire forest from zombie cups." },
+   { type:"bubble", label:"Ángeles",
+     fr:"Mais… y'en reste encore… plein… Je n'vais jamais y arriver toute seule…",
+     es:"Pero… aún queda mucho… Nunca podré sola…",
+     en:"But… there's still so much… I'll never make it alone…" },
+   { type:"bubble", label:"Jazz",
+     fr:"Heureusement… tu n'es plus seule ! J'appelle… les Éco-Justiciers de l'Intergalaxie Verte !",
+     es:"¡Por suerte… ya no estás sola! ¡Llamo… a los Ecojusticieros de la Galaxia Verde!",
+     en:"Luckily… you're not alone! Summoning… the Eco-Justice League of the Green Galaxy!" }],
+
+  // Page 47 — Super pouvoir
+  [{ type:"bubble", label:"Jazz",
+     fr:"Tu sais, tu as vraiment gagné ce super pouvoir.",
+     es:"Sabes... realmente ganaste este superpoder.",
+     en:"You know... you truly earned this superpower." },
+   { type:"bubble", label:"Ángeles",
+     fr:"C'est… un vrai super-pouvoir alors ?",
+     es:"¿Entonces… es un verdadero superpoder?",
+     en:"So… it's a real superpower?" },
+   { type:"narrative",
+     fr:"Les 500 XP t'ont donné un pouvoir rare : demander de l'aide sans dire un mot.",
+     es:"Tus 500 XP te dieron un poder raro: pedir ayuda sin decir una palabra.",
+     en:"Your 500 XP unlocked a rare skill: asking for help without saying a word." }],
+
+  // Page 48 — J'ai besoin de vous
+  [{ type:"bubble", label:"Ángeles",
+     fr:"Ton pouvoir : Demander de l'aide sans dire un mot ! J'AI BESOIN DE VOUS !",
+     es:"Tu poder: ¡Pedir ayuda sin hablar! ¡NECESITO VUESTRA AYUDA!",
+     en:"Your power: Ask for help without words! I NEED YOUR HELP!" },
+   { type:"sound", text:"WHAT THE FUN ! Même les vers de terre rappliquent !" }],
+
+  // Page 49 — Escouade éco-funky
+  [{ type:"bubble", label:"Jazz",
+     fr:"Escouade éco-funky, en position ! J'AI BESOIN DE VOUS !",
+     es:"¡Escuadrón eco-funky, a sus puestos! ¡NECESITO VUESTRA AYUDA!",
+     en:"Eco-funky squad, take your positions! I NEED YOUR HELP!" },
+   { type:"bubble", label:"Jazz",
+     fr:"Protégeons notre forêt avec classe.",
+     es:"Protejamos el bosque con estilo.",
+     en:"Let's protect our forest with elegance." },
+   { type:"sound", text:"Objectif compost activé ! / ¡Objetivo compost activado! / Compost mode: ON!" }],
+
+  // Page 50 — Nettoyer c'est stylé
+  [{ type:"bubble", fr:"Nettoyer, c'est stylé !", es:"¡Limpiar es cool!", en:"Cleaning is cool!" },
+   { type:"bubble",
+     fr:"Tout est nickel maintenant ! Grâce aux renforts !",
+     es:"¡Ahora todo está genial! ¡Gracias a los refuerzos!",
+     en:"Everything's perfect now! Thanks to the reinforcements!" }],
+
+  // Page 51 — Ramasse trie danse
+  [{ type:"narrative",
+     fr:"Ramasse, trie, danse... Vibre avec la Terre !",
+     es:"Recoge, separa, baila... ¡Vibra con la Tierra!",
+     en:"Pick up, sort, dance... Vibe with the Earth!" },
+   { type:"narrative",
+     fr:"Scanne-moi pour écouter la chanson officielle des Éco-Justiciers !",
+     es:"¡Escanéame para escuchar la canción oficial de los Ecojusticieros!",
+     en:"Scan me to listen to the official Eco-Justice League song!" }],
+
+  // Page 52 — Blank / transition
+  [{ type:"narrative", fr:"Fin de l'aventure principale.", es:"Fin de la aventura principal.", en:"End of the main adventure." }],
+
+  // Page 53 — Zone secrète
+  [{ type:"narrative",
+     fr:"Si tu lis encore, c'est que tu fais partie des vrais… Bienvenue dans la zone secrète des Éco-Justiciers. Ici, tu vas pouvoir : booster ton mental, muscler ton éco-style, et débloquer des trucs trop stylés.",
+     es:"Si aún estás leyendo, eres de los auténticos… Bienvenido/a a la zona secreta de los Ecojusticieros. Aquí vas a: fortalecer tu mente, subir de nivel tu estilo ecológico, y desbloquear cosas muy top.",
+     en:"If you're still reading, you're one of the real ones… Welcome to the secret zone of the Eco-Justice League. Here, you'll get to: Boost your mindset, Level up your eco-style, And unlock some seriously cool stuff." },
+   { type:"sound", text:"PRÊT·E ? / ¿LISTO/A? / READY? WHAT THE FUN commence maintenant !" }],
+
+  // Page 54 — QR code univers trilingue
+  [{ type:"narrative",
+     fr:"Scanne le QR code pour explorer notre univers trilingue en mode animé.",
+     es:"Escanea el código QR para explorar nuestro universo trilingüe en versión animada.",
+     en:"Scan the QR code to explore our trilingual world in animated mode." }],
+
+  // Pages 55-57 — Blanches / illustrations sans texte principal
+  [{ type:"narrative", fr:"Page illustration.", es:"Página ilustración.", en:"Illustration page." }],
+  [{ type:"narrative", fr:"Page illustration.", es:"Página ilustración.", en:"Illustration page." }],
+  [{ type:"narrative", fr:"Page illustration.", es:"Página ilustración.", en:"Illustration page." }],
+
+  // Page 58 — Power Pose
+  [{ type:"narrative",
+     fr:"Scientifiquement prouvé : 2 minutes dans cette posture → plus de confiance, de calme et de courage ! La Power Pose, un exercice popularisé par Amy Cuddy.",
+     es:"Demostrado científicamente: 2 minutos en esta postura → más confianza, calma y coraje. La Postura de Poder, ejercicio difundido por Amy Cuddy.",
+     en:"Scientifically proven: 2 minutes in this pose → more confidence, calm, and courage! The Power Pose, popularized by Amy Cuddy." },
+   { type:"bubble", label:"Ángeles",
+     fr:"Je n'vais quand même pas faire ça... Si on me regarde ?",
+     es:"No voy a hacer eso… ¿Y si alguien me ve?",
+     en:"I'm not really gonna do this… What if someone's watching?" },
+   { type:"bubble", label:"Ángeles",
+     fr:"OK… bras là… jambe là… on dirait un flamant pas motivé.",
+     es:"Ok… brazo por aquí… pierna por allá… parezco un flamenco sin ganas.",
+     en:"Ok… arm here… leg there… I look like a lazy flamingo." },
+   { type:"bubble", label:"Jazz",
+     fr:"Redresse-toi ! Imagine que tu es une boss !",
+     es:"¡Enderézate! ¡Imagina que eres una jefa!",
+     en:"Stand tall, human! Pretend you're a boss!" },
+   { type:"bubble", label:"Ángeles",
+     fr:"Attends… je sens un truc !",
+     es:"Espera… ¡siento algo!", en:"Wait… I feel something!" },
+   { type:"sound", text:"WHAT THE FUN ! Je suis une Queen du calme ! / ¡Soy la reina de la calma! / I'm the Queen of Chill!" }],
+
+  // Page 59 — Mantra de la confiance (exercice)
+  [{ type:"narrative",
+     fr:"Mantra de la confiance. Apprends le mantra avec la danse et poste-le avec le hashtag Confiance.",
+     es:"Mantra de la confianza. Aprende el mantra con el baile y publícalo con el hashtag Confianza.",
+     en:"Confidence mantra. Learn the mantra with the dance and post it with the hashtag Confidence." }],
+
+  // Page 60 — Complète les paroles (jeu)
+  [{ type:"narrative",
+     fr:"Complète les paroles du Mantra de la Confiance.",
+     es:"Completa la letra del Mantra de la Confianza.",
+     en:"Complete the lyrics of the Confidence Mantra." }],
+
+  // Page 61 — Dessine ton personnage confiance
+  [{ type:"narrative",
+     fr:"Dessine ton personnage Confiance : à quoi ressemble le héros ou l'héroïne qui sommeille en toi ?",
+     es:"Dibuja tu personaje Confianza: ¿cómo es el héroe o heroína que llevas dentro?",
+     en:"Draw your Confidence character: what does the hero within you look like?" }],
+
+  // Page 62 — La bonne image au bon mot
+  [{ type:"narrative",
+     fr:"La bonne image au bon mot ! Associe chaque image à sa définition.",
+     es:"¡La imagen correcta con la palabra correcta! Asocia cada imagen con su definición.",
+     en:"Right picture, right word! Match each image to its definition." }],
+
+  // Page 63 — Glossaire / définitions
+  [{ type:"narrative",
+     fr:"Quand ton cerveau te fait croire que c'est la fin du monde… alors qu'en vrai, t'as juste oublié ton goûter.",
+     es:"Cuando tu mente dice emergencia total… pero solo te falta el bocata.",
+     en:"When your brain freaks out… but it's just because you skipped snack time." },
+   { type:"narrative",
+     fr:"Le super-pouvoir sonore de Jazz quand il ronfle ou pense très fort.",
+     es:"El superpoder sónico de Jazz cuando ronca o piensa muy fuerte.",
+     en:"Jazz's sonic superpower when he snores or thinks too loud." },
+   { type:"narrative",
+     fr:"Dormir comme une graine bio : profondément, lentement… et sans écran.",
+     es:"Dormir como una semilla ecológica: profundo, lento… y sin pantallas.",
+     en:"Sleep like an organic seed: deep, slow… and screen-free." },
+   { type:"narrative",
+     fr:"Points invisibles gagnés chaque fois que tu fais un petit pas courageux.",
+     es:"Puntos invisibles que ganas cuando haces un paso valiente.",
+     en:"Invisible points earned every time you take a brave little step." }],
+
+  // Page 64 — Change le mood (exercice)
+  [{ type:"narrative",
+     fr:"Change le mood. L'inconscient ne comprend pas le « ne pas ». Apprends à transformer tes pensées.",
+     es:"Cambia el rollo. El inconsciente no entiende el no. Aprende a transformar tus pensamientos.",
+     en:"Change the vibe. The unconscious mind doesn't grasp don't. Learn to transform your thoughts." }],
+
+  // Page 65 — Tableau pensées négatives / positives
+  [{ type:"narrative",
+     fr:"Je ne suis pas capable → J'ai le droit d'essayer. Je vais rater → Chaque jour je progresse. J'ai trop peur → Je peux m'entraîner. Je suis nul ou nulle → J'apprends petit à petit. Je n'y arriverai jamais → Je suis unique. Je suis bizarre → J'avance à mon propre rythme. Je n'ose pas → Je suis en chemin. Je suis trop lent ou lente → Je peux essayer un petit truc. Je ne suis pas doué ou douée → Je peux avoir peur et avancer.",
+     es:"No soy capaz → Tengo derecho a intentarlo. Voy a fallar → Cada día progreso. Me da mucho miedo → Puedo practicar. Soy un fracaso → Aprendo paso a paso. Nunca lo lograré → Soy único o única. Soy raro o rara → Avanzo a mi ritmo. No me atrevo → Estoy en proceso. Soy muy lento o lenta → Puedo intentar una cosa pequeña. No tengo talento → Puedo tener miedo y avanzar.",
+     en:"I'm not good enough → I'm allowed to try. I'll mess it up → I'm getting better every day. I'm too scared → I can practice. I'm useless → I learn step by step. I'll never make it → I'm unique. I'm weird → I go at my own pace. I don't dare → I'm on my way. I'm too slow → I can try something small. I'm not talented → I can be scared and still go on." }],
+
+  // Page 66 — Vrai ou WHAT THE FUZZ
+  [{ type:"narrative",
+     fr:"Vrai ou What the Fuzz ? Une tortue peut confondre un sac plastique avec une méduse. Vrai !",
+     es:"¿Verdadero o What the Fuzz? Una tortuga puede confundir una bolsa con una medusa. ¡Verdadero!",
+     en:"True or What the Fuzz? A turtle can mistake a plastic bag for a jellyfish. True!" },
+   { type:"narrative",
+     fr:"Un chewing-gum met plus de 5 ans à disparaître. Vrai !",
+     es:"Un chicle tarda más de 5 años en desaparecer. ¡Verdadero!",
+     en:"Chewing gum takes more than 5 years to disappear. True!" },
+   { type:"narrative",
+     fr:"L'empreinte carbone d'un objet est la marque qu'il laisse sur ton tapis. What the Fuzz !",
+     es:"La huella de carbono es lo que ensucia tu alfombra. ¡What the Fuzz!",
+     en:"A carbon footprint is the dirt it leaves on your carpet. What the Fuzz!" },
+   { type:"narrative",
+     fr:"Les abeilles dansent pour montrer où sont les fleurs. Vrai !",
+     es:"Las abejas bailan para mostrar dónde están las flores. ¡Verdadero!",
+     en:"Bees dance to show where the flowers are. True!" },
+   { type:"narrative",
+     fr:"Les bananes génèrent de l'électricité si on les branche à une prise. What the Fuzz !",
+     es:"Los plátanos generan electricidad si los enchufas. ¡What the Fuzz!",
+     en:"Bananas generate electricity if you plug them in. What the Fuzz!" },
+   { type:"narrative",
+     fr:"Une seule brosse à dents met plus de 400 ans à se décomposer. Vrai !",
+     es:"Un solo cepillo de dientes tarda más de 400 años en desaparecer. ¡Verdadero!",
+     en:"One toothbrush takes more than 400 years to decompose. True!" },
+   { type:"narrative",
+     fr:"Les arbres respirent comme nous, mais à l'envers. Vrai !",
+     es:"Los árboles respiran como nosotros, pero al revés. ¡Verdadero!",
+     en:"Trees breathe like us — but in reverse. True!" },
+   { type:"narrative",
+     fr:"Certains champignons peuvent manger du plastique. Vrai !",
+     es:"Algunos hongos pueden comerse el plástico. ¡Verdadero!",
+     en:"Some mushrooms can eat plastic. True!" },
+   { type:"narrative",
+     fr:"Un sac plastique qui s'envole peut voyager plus loin qu'un pigeon voyageur. Vrai !",
+     es:"Una bolsa de plástico puede volar más lejos que una paloma mensajera. ¡Verdadero!",
+     en:"A plastic bag can fly farther than a carrier pigeon. True!" },
+   { type:"narrative",
+     fr:"Il existe une voiture qui roule à la crotte de vache. Vrai ! C'est le biogaz.",
+     es:"Existe un coche que funciona con caca de vaca. ¡Verdadero! Es el biogás.",
+     en:"There's a car that runs on cow poop. True! That's biogas." }],
+
+  // Page 67 — Cherche les intrus
+  [{ type:"narrative",
+     fr:"Cherche les dix intrus non écolos !",
+     es:"¡Busca los diez intrusos no ecológicos!",
+     en:"Spot the ten non-eco intruders!" }],
+
+  // Page 68 — Qui suis-je ?
+  [{ type:"narrative",
+     fr:"Qui suis-je ? Les énigmes écolos folles ! Un : je suis invisible mais je peux sauver la planète si tu me réduis. Deux et trois : je suis un animal qui fait le ménage sous terre. Quatre : je fais du bruit et je vibre quand je dors. Cinq : je suis fait de bouteilles mais je tiens chaud en hiver. Six : je suis utile mais invisible, je viens du soleil. Sept : je suis un sac qui veut vivre 300 ans. Huit : je rote, je pète, et je réchauffe la planète. Neuf : je suis lent mais j'ai la classe.",
+     es:"¿Quién soy yo? ¡Adivinanzas verdes y locas! Uno: soy invisible pero puedo salvar el planeta si me reduces. Dos y tres: soy un animal que limpia bajo tierra. Cuatro: hago ruido y vibro cuando duermo. Cinco: estoy hecho de botellas pero doy calor en invierno. Seis: soy útil pero invisible, vengo del sol. Siete: soy una bolsa que quiere vivir 300 años. Ocho: eructo, me tiro pedos y caliento el planeta. Nueve: soy lento pero con estilo.",
+     en:"Who am I? Crazy green riddles! One: I'm invisible but I can save the planet if you reduce me. Two and three: I'm an animal that cleans underground. Four: I make noise and vibrate when I sleep. Five: I'm made of bottles but I keep you warm. Six: I'm useful but invisible, I come from the sun. Seven: I'm a bag that wants to live 300 years. Eight: I burp, I fart, and I heat the planet. Nine: I'm slow but classy." }],
+
+  // Page 69 — Recherche l'erreur
+  [{ type:"narrative",
+     fr:"Recherche l'erreur qui se cache dans la BD. La réponse sera dans la prochaine BD : Les graines plantées.",
+     es:"Busca el error que se esconde en el cómic. La respuesta estará en el próximo cómic: Las bombas plantadas.",
+     en:"Spot the hidden mistake in the comic. The answer will be in the next comic: The planted bombs." }],
+
+  // Page 70 — Réponses
+  [{ type:"narrative", fr:"Réponses aux jeux.", es:"Respuestas.", en:"Answers." }],
+
+  // Pages 71-72 — Blanches
+  [{ type:"narrative", fr:"Page blanche.", es:"Página en blanco.", en:"Blank page." }],
+  [{ type:"narrative", fr:"Page blanche.", es:"Página en blanco.", en:"Blank page." }],
+
+  // Page 73 — Complète les paroles (réponses)
+  [{ type:"narrative",
+     fr:"Réponses du Mantra de la Confiance : What the Fuzz ? — Ils jugent. Me miran. I feel small. Je doute. Yo dudo. But I stand tall. What the Fuzz ! What the Fun !",
+     es:"Respuestas del Mantra de la Confianza: What the Fuzz? — Ils jugent. Me miran. I feel small. Je doute. Yo dudo. But I stand tall. ¡What the Fuzz! ¡What the Fun!",
+     en:"Confidence Mantra answers: What the Fuzz? — Ils jugent. Me miran. I feel small. Je doute. Yo dudo. But I stand tall. What the Fuzz! What the Fun!" }],
+
+  // Page 74 — Change le mood (réponses)
+  [{ type:"narrative",
+     fr:"Réponses : Je ne suis pas capable → J'ai le droit d'essayer. Je vais rater → Chaque jour je progresse. J'ai trop peur → Je peux m'entraîner.",
+     es:"Respuestas: No soy capaz → Tengo derecho a intentarlo. Voy a fallar → Cada día progreso. Me da mucho miedo → Puedo practicar.",
+     en:"Answers: I'm not good enough → I'm allowed to try. I'll mess it up → I'm getting better every day. I'm too scared → I can practice." }],
+
+  // Page 75 — Vrai ou fuzz (réponses)
+  [{ type:"narrative",
+     fr:"Réponses Vrai ou What the Fuzz : Une tortue peut confondre un sac plastique avec une méduse — Vrai. Un chewing-gum met plus de 5 ans à disparaître — Vrai. L'empreinte carbone sur le tapis — What the Fuzz. Les abeilles dansent — Vrai. Les bananes et l'électricité — What the Fuzz. La brosse à dents 400 ans — Vrai. Les arbres respirent à l'envers — Vrai. Les champignons mangent le plastique — Vrai. Le sac plastique voyageur — Vrai. La voiture à crotte de vache — Vrai, c'est le biogaz.",
+     es:"Respuestas Verdadero o What the Fuzz: Tortuga y bolsa — Verdadero. Chicle 5 años — Verdadero. Huella de carbono en alfombra — What the Fuzz. Abejas bailan — Verdadero. Plátanos electricidad — What the Fuzz. Cepillo 400 años — Verdadero. Árboles al revés — Verdadero. Hongos plástico — Verdadero. Bolsa viajera — Verdadero. Coche caca vaca — Verdadero, biogás.",
+     en:"True or What the Fuzz answers: Turtle bag — True. Gum 5 years — True. Carbon footprint on carpet — What the Fuzz. Bees dance — True. Bananas electricity — What the Fuzz. Toothbrush 400 years — True. Trees breathe in reverse — True. Mushrooms eat plastic — True. Plastic bag traveler — True. Cow poop car — True, biogas." }],
+
+  // Page 76 — Cherche intrus réponses
+  [{ type:"narrative",
+     fr:"Réponses cherche les intrus.",
+     es:"Respuestas busca los intrusos.",
+     en:"Intruders answers." }],
+
+  // Page 77 — Qui suis-je réponses
+  [{ type:"narrative",
+     fr:"Réponses Qui suis-je : Un — ton empreinte carbone. Deux et trois — le ver de terre. Quatre — Jazz qui ronfle. Cinq — un pull polaire. Six — l'énergie solaire. Sept — un sac plastique zombifié. Huit — une vache. Neuf — une tortue.",
+     es:"Respuestas ¿Quién soy yo?: Uno — tu huella de carbono. Dos y tres — la lombriz. Cuatro — Jazz roncando. Cinco — suéter de plástico reciclado. Seis — energía solar. Siete — bolsa de plástico zombi. Ocho — una vaca. Nueve — una tortuga.",
+     en:"Who am I answers: One — your carbon footprint. Two and three — the earthworm. Four — Jazz snoring. Five — a recycled fleece sweater. Six — solar energy. Seven — a zombified plastic bag. Eight — a cow. Nine — a turtle." }],
+
+  // Page 78 — L'aventure ne s'arrête pas
+  [{ type:"narrative",
+     fr:"L'aventure ne s'arrête pas là… Scanne ce code, ça clique, ça bouge, ça joue ! Le magazine interactif t'attend.",
+     es:"La aventura no termina aquí… ¡Escanea este código: hace clic, se mueve, juega! La revista interactiva te espera.",
+     en:"The adventure doesn't stop here… Scan this code – it clicks, it moves, it plays! The interactive magazine is waiting for you." }],
+
+  // Page 79 — Ne fais pas de bêtises
+  [{ type:"bubble", label:"Jazz",
+     fr:"Ne fais pas de bêtises, hein ?",
+     es:"¿No hagas tonterías, eh?",
+     en:"Don't do anything silly, okay?" }],
+
+  // Page 80 — Mission accomplie
+  [{ type:"narrative",
+     fr:"Mission accomplie... mais un peu collante !",
+     es:"¡Misión cumplida… pero un poco pegajosa!",
+     en:"Mission accomplished… but kind of sticky!" }],
+
+  // Page 81 — 4e de couverture
+  [{ type:"narrative",
+     fr:"Jazz, un chien presque zen. Ángeles, une ado curieuse. Des animaux déboussolés. Une planète qui sature. Bienvenue dans une BD pleine d'émotions, d'écologie… et de bugs What the fuzz ! Tu vas rire, réfléchir, ramasser des déchets en mode gamer, et peut-être débloquer un pouvoir secret. Une aventure imaginée par une psychologue pour celles et ceux qui veulent grandir avec le cerveau, le cœur… et un bonus de confiance.",
+     es:"Jazz, un perro casi zen. Ángeles, una chica curiosa. Animales perdidos. Un planeta al borde del colapso. Bienvenido a un cómic sobre emociones, ecología… y bugs mentales estilo What the fuzz. Una aventura escrita por una psicóloga, para quienes quieren crecer con la cabeza, el corazón… y XP extra de confianza.",
+     en:"Jazz, a mostly chill dog. Ángeles, a curious teen. Lost animals. A planet stuck on glitch mode. Welcome to a comic about emotions, ecology… and a few bugs What the fuzz! Written by a psychologist for kids who want to grow up with their brain, their heart… and a bit of bonus-level confidence." }],
+
+  // Page 82 — Dernière page
+  [{ type:"sound", text:"WHAT THE FUN !" }]
+];
+
+// ═══════════════════════════════════════════
+// MOTEUR
+// ═══════════════════════════════════════════
+let currentPage=0, isPlaying=false, speed=1, queue=[], queueIdx=0;
+const langCodes={fr:'fr-FR',es:'es-ES',en:'en-GB'};
+const langFlags={fr:'🇫🇷',es:'🇪🇸',en:'🇬🇧'};
+const langLabels={fr:'Français',es:'Español',en:'English'};
+
+function init(){
+  document.getElementById('totalPagesNum').textContent=pages.length;
+  buildDots(); loadPage(0);
+}
+
+function buildDots(){
+  const c=document.getElementById('pageDots'); c.innerHTML='';
+  pages.forEach((_,i)=>{ const d=document.createElement('div'); d.className='dot'+(i===0?' current':''); d.id='dot-'+i; c.appendChild(d); });
+}
+
+function loadPage(idx){
+  stopSpeech(); currentPage=idx; queueIdx=0; queue=[];
+  document.getElementById('currentPageNum').textContent=idx+1;
+  document.getElementById('langStatus').textContent='Appuie sur ▶ pour écouter';
+  document.getElementById('progressFill').style.width='0%';
+  document.getElementById('btnPrev').disabled=idx===0;
+  document.getElementById('btnNext').disabled=idx===pages.length-1;
+  const wtf=document.getElementById('wtfBadge'); wtf.textContent=''; wtf.classList.remove('visible');
+  const blocksEl=document.getElementById('contentBlocks'); blocksEl.innerHTML='';
+
+  pages[idx].forEach((block,bi)=>{
+    if(block.type==='sound'){
+      const el=document.createElement('div'); el.className='block-sound'; el.id='block-'+bi;
+      el.innerHTML=`<div class="sound-text">${block.text}</div>`;
+      blocksEl.appendChild(el);
+      queue.push({text:block.text,lang:null,blockIdx:bi,lineId:null});
+    } else {
+      const isBubble=block.type==='bubble';
+      const el=document.createElement('div');
+      el.className=isBubble?'block-bubble':'block-narrative'; el.id='block-'+bi;
+      const icon=isBubble?'💬':'📖';
+      const lbl=block.label||( isBubble?'Bulle':'Narrateur');
+      el.innerHTML=`<div class="block-type">${icon} ${lbl}</div>`+buildLines(block,bi);
+      blocksEl.appendChild(el);
+      ['fr','es','en'].forEach(lang=>{ if(block[lang]) queue.push({text:block[lang],lang,blockIdx:bi,lineId:`line-${bi}-${lang}`}); });
+    }
+  });
+
+  document.querySelectorAll('.dot').forEach((d,i)=>{ d.className='dot'+(i===idx?' current':(i<idx?' done':'')); });
+}
+
+function buildLines(block,bi){
+  return ['fr','es','en'].map(lang=>
+    `<div class="lang-line" id="line-${bi}-${lang}"><span class="lang-flag">${langFlags[lang]}</span><span class="lang-text-inline">${block[lang]||''}</span></div>`
+  ).join('');
+}
+
+function togglePlay(){ if(isPlaying) stopSpeech(); else playNext(); }
+
+function playNext(){
+  if(queueIdx>=queue.length){onComplete();return;}
+  const item=queue[queueIdx];
+  clearHL();
+  document.querySelectorAll('.block-bubble').forEach(b=>b.classList.remove('active'));
+  const bel=document.getElementById('block-'+item.blockIdx); if(bel) bel.classList.add('active');
+  if(item.lineId){const l=document.getElementById(item.lineId);if(l)l.classList.add('speaking');}
+  document.getElementById('progressFill').style.width=(queueIdx/queue.length*100)+'%';
+  document.getElementById('langStatus').textContent=item.lang?langFlags[item.lang]+' '+langLabels[item.lang]+'…':'🔊 En cours…';
+  const utt=new SpeechSynthesisUtterance(item.text);
+  utt.lang=item.lang?langCodes[item.lang]:'fr-FR'; utt.rate=speed;
+  utt.onend=()=>{ queueIdx++; if(isPlaying) setTimeout(playNext,item.lang==='en'?700:350); };
+  utt.onerror=()=>{ queueIdx++; if(isPlaying) playNext(); };
+  isPlaying=true; updateBtn(true); window.speechSynthesis.speak(utt);
+}
+
+function stopSpeech(){ isPlaying=false; window.speechSynthesis.cancel(); updateBtn(false); document.getElementById('langStatus').textContent='En pause'; clearHL(); }
+function onComplete(){ isPlaying=false; updateBtn(false); clearHL(); document.getElementById('progressFill').style.width='100%'; document.getElementById('langStatus').textContent='✓ Terminé !'; const w=document.getElementById('wtfBadge'); w.textContent=currentPage===pages.length-1?'WHAT THE FUN ! 🎉':'✨ Page suivante →'; w.classList.add('visible'); }
+function clearHL(){ document.querySelectorAll('.lang-line').forEach(l=>l.classList.remove('speaking')); document.querySelectorAll('.block-bubble').forEach(b=>b.classList.remove('active')); }
+function updateBtn(p){ const b=document.getElementById('btnPlay'); b.textContent=p?'⏸':'▶'; b.classList.toggle('playing',p); }
+function prevPage(){ if(currentPage>0) loadPage(currentPage-1); }
+function nextPage(){ if(currentPage<pages.length-1) loadPage(currentPage+1); }
+function setSpeed(s,btn){ speed=s; document.querySelectorAll('.speed-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); if(isPlaying){stopSpeech();playNext();} }
+
+init();
+</script>
+</body>
+</html>
